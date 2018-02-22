@@ -279,7 +279,10 @@ input:checked + .slider:before {
 
 <script>
    var lanIp;
-   var connType = null;
+   var aioKey;
+   var aioFeed;
+   var lanIp;
+   var connType;
 
    var color;
    $('#cp').colorpicker({
@@ -316,12 +319,14 @@ input:checked + .slider:before {
    
    $('#cookie-save').click(function() {
       var lanIp = $('#lan-ip').val();
-      console.log(lanIp);
-      console.log(Cookies.get('name'));
-      if (lanIp) {
-         Cookies.set('lcnt-lan-ip', lanIp, { expires: 300, path: '' });
-      }
-
+      var aioKey = $('#AIO-key').val();
+      var aioFeed = $('#AIO-feed').val();
+      if (lanIp) 
+         Cookies.set('lcnt-lan-ip', lanIp, {expires:300,path:''});
+      if (aioKey) 
+         Cookies.set('lcnt-lan-ip', aioKey, {expires:300,path:''});
+      if (aioFeed) 
+         Cookies.set('lcnt-lan-ip', aioFeed, {expires:300,path:''});
    })   
 
 
