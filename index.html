@@ -324,11 +324,16 @@ input:checked + .slider:before {
       if (lanIp) 
          Cookies.set('lcnt-lan-ip', lanIp, {expires:300,path:''});
       if (aioKey) 
-         Cookies.set('lcnt-lan-ip', aioKey, {expires:300,path:''});
+         Cookies.set('lcnt-aio-key', aioKey, {expires:300,path:''});
       if (aioFeed) 
-         Cookies.set('lcnt-lan-ip', aioFeed, {expires:300,path:''});
-   })   
+         Cookies.set('lcnt-aio-feed', aioFeed, {expires:300,path:''});
+   });
 
+   $('#cookie-delete').click(function() {
+      Cookies.remove('lcnt-lan-ip');
+      Cookies.remove('lcnt-aio-key');
+      Cookies.remove('lcnt-aio-feed');
+   });
 
    function send(method, path, data) {
       console.log(method + path + data);
