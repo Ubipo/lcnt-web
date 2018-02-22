@@ -330,9 +330,9 @@ input:checked + .slider:before {
    });
 
    $('#cookie-delete').click(function() {
-      Cookies.remove('lcnt-lan-ip');
-      Cookies.remove('lcnt-aio-key');
-      Cookies.remove('lcnt-aio-feed');
+      Cookies.remove('lcnt-lan-ip', {path:''});
+      Cookies.remove('lcnt-aio-key', {path:''});
+      Cookies.remove('lcnt-aio-feed', {path:''});
    });
 
    function send(method, path, data) {
