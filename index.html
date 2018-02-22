@@ -196,7 +196,7 @@ input:checked + .slider:before {
                   <div class="form-group AIO-input">
                      <input id='AIO-key' class='form-control' placeholder="AIO key" type='text'/>
                      <div class="input-group">
-                        <input id='AIO-feed' class='form-control' placeholder="AIO feed" type='text'/>
+                        <input id='AIO-feed' class='form-control' placeholder="AIO feed" type='password'/>
                         <div class="input-group-append">
                            <button type="button" id="AIO-submit" class="btn btn-info">Connect</button>
                         </div>
@@ -278,13 +278,17 @@ input:checked + .slider:before {
 </div>
 
 <script>
-   var lanIp;
-   var aioKey;
-   var aioFeed;
-   var lanIp;
-   var connType;
+   var lanIp = Cookies.get('lcnt-lan-ip');
+   var aioKey = Cookies.get('lcnt-aio-key');
+   var aioFeed = Cookies.set('lcnt-aio-feed');
 
+   $('#lan-ip').val(lanIp);
+   $('#AIO-key').val(aioKey);
+   $('#AIO-feed').val(aioFeed);
+
+   var connType;
    var color;
+
    $('#cp').colorpicker({
       format: 'hex',
       customClass: 'colorpicker-2x',
