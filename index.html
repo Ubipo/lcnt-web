@@ -116,16 +116,8 @@ html,body{ margin:0; padding:0; height:100%; width:100%; }
    border-top-right-radius: 0;
 }
 
-.cookie>label {
-   margin-bottom: 0.1em;
-}
-
-.cookie>.btn-group {
-   margin-bottom: 1em;
-}
-
-.cookie p {
-   margin-bottom: 0;
+.cookie>p {
+   margin-bottom: 0.5em;
 }
 
 /* ==== Toggle switches ==== */
@@ -193,7 +185,7 @@ input:checked + .slider:before {
                   <div class="form-group input-group">
                      <input id='lan-ip' class='form-control' placeholder="LAN IP" type='text'/>
                      <div class="input-group-append">
-                        <button type="button" id="lan-submit" class="btn btn-info">Connect</button>
+                        <button type="button" id="lan-submit" class="btn btn-info">Ping</button>
                      </div>
                   </div>
                   <hr>
@@ -202,17 +194,16 @@ input:checked + .slider:before {
                      <div class="input-group">
                         <input id='AIO-key' class='form-control' placeholder="AIO key" type='password'/>
                         <div class="input-group-append">
-                           <button type="button" id="AIO-submit" class="btn btn-info">Connect</button>
+                           <button type="button" id="AIO-submit" class="btn btn-info">Ping</button>
                         </div>
                      </div>
                   </div>
                   <div class='cookie'>
-                     <label for="fridge-delay">Data cookie:</label><br>
-                     <div class="btn-group" role="group" aria-label="Basic example">
-                       <button type="button" id="cookie-save" class="btn btn-success">Save</button>
-                       <button type="button" id="cookie-delete" class="btn btn-danger">Delete</button>
-                     </div>
-                     <p class="text-info">Currently selected: <b><span id="conn-type-text"></span></b></p>
+                     <p>Data cookie: 
+                        <a href="#" class="text-success" id="cookie-save">Save</a> 
+                        <a href="#" class="text-danger" id="cookie-delete">Delete</a></u>
+                     </p>
+                     <p>Currently selected: <b><span class="text-info" id="conn-type-text"></span></b></p>
                      <b><p class="text-warning" id="status-text"></p></b>
                   </div>
                </div>
@@ -323,7 +314,11 @@ input:checked + .slider:before {
       $('#status-text').html("Connecting via LAN...").removeClass('text-success text-danger').addClass('text-warning');
       lanIp = $('#lan-ip').val();
       var nonce = Math.floor((Math.random()*1000));
-      $.post(lanIp, nonce, function(res) {
+      $.ajax({
+         type: 'POST',
+         url: 'http://'+lanIp+'/ping',
+         data: nonce
+      }).done(function() {
          if (parseInt(res)==nonce) {
             connType = "LAN";
             $('#status-text').html("Connected via LAN!").removeClass('text-warning text-danger').addClass('text-success');
@@ -343,7 +338,7 @@ input:checked + .slider:before {
       aioKey = $('#AIO-key').val();
       aioNonce = Math.floor((Math.random()*1000));
       $.ajax({
-         url: "http://io.adafruit.com/api/v2/"+aioFeed+"/data",
+         url: "https://io.adafruit.com/api/v2/"+aioFeed+"/data",
          type: "POST",
          data: JSON.stringify({value: "/ping$"+aioNonce}),
          contentType: "application/json; charset=utf-8",
@@ -369,7 +364,7 @@ input:checked + .slider:before {
       if (connType == "AIO") {
          $('#status-text').html("Connecting via AIO: waiting for response... (attempt "+aioAttempt+" of "+aioMaxAttempts+")").removeClass('text-success text-danger').addClass('text-warning');
          $.ajax({
-            url: "http://io.adafruit.com/api/v2/"+aioFeed+"/data",
+            url: "https://io.adafruit.com/api/v2/"+aioFeed+"/data",
             type: "GET",
             beforeSend: function(xhr){
                xhr.setRequestHeader('Content-Type', 'application/json');
