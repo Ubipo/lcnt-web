@@ -29,7 +29,6 @@ html,body{ margin:0; padding:0; height:100%; width:100%; }
 }
 #wrapper {
    padding-top: 1em;
-   overflow:  hidden;
    height: 100%;
    width: 100%;
    background-color: #06a2c4;
@@ -453,9 +452,9 @@ input:checked + .slider:before {
       if (typeof data == "object")
          data = JSON.stringify(data);
       if (connType == "AIO") {
-         console.log("AIO| " + method+'$'+path+'$'+data);
+         alert("AIO| " + method+'$'+path+'$'+data);
       } else {
-         console.log("LAN|" + method + "|" + path + "|" + data);
+         alert("LAN|" + method + "|" + path + "|" + data);
       }
    }
 
