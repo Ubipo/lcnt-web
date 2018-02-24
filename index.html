@@ -16,6 +16,8 @@
 
 <style>
 
+html,body{ margin:0; padding:0; height:100%; width:100%; }
+
 #cp {
    width: 100%;
 }
@@ -24,7 +26,9 @@
 }
 #wrapper {
    padding-top: 1em;
-   height: 100vh;
+   overflow:  hidden;
+   height: 100%;
+   width: 100%;
    background-color: #06a2c4;
 }
 .colorpicker-2x .colorpicker-saturation {
@@ -194,9 +198,9 @@ input:checked + .slider:before {
                   </div>
                   <hr>
                   <div class="form-group AIO-input">
-                     <input id='AIO-key' class='form-control' placeholder="AIO key" type='text'/>
+                     <input id='AIO-feed' class='form-control' placeholder="AIO feed" type='text'/>
                      <div class="input-group">
-                        <input id='AIO-feed' class='form-control' placeholder="AIO feed" type='password'/>
+                        <input id='AIO-key' class='form-control' placeholder="AIO key" type='password'/>
                         <div class="input-group-append">
                            <button type="button" id="AIO-submit" class="btn btn-info">Connect</button>
                         </div>
@@ -208,6 +212,7 @@ input:checked + .slider:before {
                        <button type="button" id="cookie-save" class="btn btn-success">Save</button>
                        <button type="button" id="cookie-delete" class="btn btn-danger">Delete</button>
                      </div>
+                     <p class="text-info">Currently selected: <b><span id="conn-type-text"></span></b></p>
                      <b><p class="text-warning" id="status-text"></p></b>
                   </div>
                </div>
@@ -252,7 +257,7 @@ input:checked + .slider:before {
                         <i class="fas fa-bed fa-lg"></i>
                      </div>
                <label class="switch">
-                 <input type="checkbox" checked disabled>
+                 <input id="relay-night" type="checkbox" checked disabled>
                  <span class="slider"></span>
                </label>
             </div>
@@ -261,14 +266,14 @@ input:checked + .slider:before {
                   <i class="fas fa-lightbulb fa-lg"></i>
                </div>
                <label class="switch">
-                 <input type="checkbox" checked>
+                 <input id="relay-cupboard" type="checkbox" checked>
                  <span class="slider"></span>
                </label>
             </div>
             <div class="preset-btns">
-               <button type="button" class="btn btn-info"><i class="fas fa-home fa-lg"></i></button>
-               <button type="button" class="btn btn-info btn-right"><i class="fas fa-moon fa-lg"></i></button>
-               <button type="button" class="btn btn-info btn-right"><i class="fas fa-sign-out-alt fa-lg"></i></button>
+               <button type="button" id="preset-home" class="btn btn-info"><i class="fas fa-home fa-lg"></i></button>
+               <button type="button" id="preset-sleep" class="btn btn-info btn-right"><i class="fas fa-moon fa-lg"></i></button>
+               <button type="button" id="preset-away" class="btn btn-info btn-right"><i class="fas fa-sign-out-alt fa-lg"></i></button>
             </div>
              </div>
            </div>
@@ -280,32 +285,41 @@ input:checked + .slider:before {
 <script>
    var lanIp = Cookies.get('lcnt-lan-ip');
    var aioKey = Cookies.get('lcnt-aio-key');
-   var aioFeed = Cookies.set('lcnt-aio-feed');
+   var aioFeed = Cookies.get('lcnt-aio-feed');
+   var connType = Cookies.get('lcnt-conn-type');
 
-   $('#lan-ip').val(lanIp);
-   $('#AIO-key').val(aioKey);
-   $('#AIO-feed').val(aioFeed);
+   if (lanIp) $('#lan-ip').val(lanIp);
+   if (aioKey) $('#AIO-key').val(aioKey);
+   if (aioFeed) $('#AIO-feed').val(aioFeed);
+   $('#conn-type-text').val(connType);
 
-   var connType;
+   var aioLastId;
+   var aioNonce;
+   var aioAttempt;
+   var aioMaxAttempts = 5;
    var color;
 
    $('#cp').colorpicker({
       format: 'hex',
       customClass: 'colorpicker-2x',
       hoizontal: true,
-      sliders:{saturation:{maxLeft: 300, maxTop: 300},
-               hue:{maxTop: 300},
-               alpha:{maxTop: 300}}
-      }).on('changeColor', function(e){
-         color = e.color.toString('hex');
-         $('#wrapper').css('background-color', color);
-      }).on('hidePicker', function(e){
-         $.post('set', color);
-      });
+      sliders: {
+         saturation:{maxLeft: 300, maxTop: 300},
+         hue:{maxTop: 300},
+         alpha:{maxTop: 300}
+      }
+   }).on('changeColor', function(e) {
+      color = e.color.toString('hex');
+      $('#wrapper').css('background-color', color);
+   }).on('hidePicker', function(e) {
+      send('POST', '/strip/solid', color);
+   });
 
    // $('#cp').on('focusout', function(e){// $.post('set', color)//})
 
    $('#lan-submit').click(function() {
+      connType = "LAN";
+      $('#conn-type-text').html(connType);
       $('#status-text').html("Connecting via LAN...").removeClass('text-success text-danger').addClass('text-warning');
       lanIp = $('#lan-ip').val();
       var nonce = Math.floor((Math.random()*1000));
@@ -314,29 +328,101 @@ input:checked + .slider:before {
             connType = "LAN";
             $('#status-text').html("Connected via LAN!").removeClass('text-warning text-danger').addClass('text-success');
          } else {
-            $('#status-text').html("Can't connect via LAN!").removeClass('text-warning text-success').addClass('text-danger');
+            $('#status-text').html("Can't connect via LAN: invalid response!").removeClass('text-warning text-success').addClass('text-danger');
          }
       }).fail(function() {
-         $('#status-text').html("Can't connect via LAN!").removeClass('text-warning text-success').addClass('text-danger');
+         $('#status-text').html("Can't connect via LAN: connection problem!").removeClass('text-warning text-success').addClass('text-danger');
       });
    });
+
+   $('#AIO-submit').click(function() {
+      connType = "AIO";
+      $('#conn-type-text').html(connType);
+      $('#status-text').html("Connecting via AIO: sending ping...").removeClass('text-success text-danger').addClass('text-warning');
+      aioFeed = $('#AIO-feed').val();
+      aioKey = $('#AIO-key').val();
+      aioNonce = Math.floor((Math.random()*1000));
+      $.ajax({
+         url: "http://io.adafruit.com/api/v2/"+aioFeed+"/data",
+         type: "POST",
+         data: JSON.stringify({value: "/ping$"+aioNonce}),
+         contentType: "application/json; charset=utf-8",
+         beforeSend: function(xhr){
+            xhr.setRequestHeader('X-AIO-Key', aioKey);
+         },
+      }).done(function(data) {
+         aioSendId = data["id"];
+         if (aioSendId.length > 10) {
+            $('#status-text').html("Connecting via AIO: ping send").removeClass('text-success text-danger').addClass('text-warning');
+            aioAttempt = 0;
+            aioPing();
+         } else {
+            $('#status-text').html("Can't connect via AIO: invalid response!").removeClass('text-warning text-success').addClass('text-danger');
+         }
+         
+      }).fail(function() {
+         $('#status-text').html("Can't connect via AIO: connection problem!").removeClass('text-warning text-success').addClass('text-danger');
+      });
+   });
+
+   function aioPing() {
+      if (connType == "AIO") {
+         $('#status-text').html("Connecting via AIO: waiting for response... (attempt "+aioAttempt+" of "+aioMaxAttempts+")").removeClass('text-success text-danger').addClass('text-warning');
+         $.ajax({
+            url: "http://io.adafruit.com/api/v2/"+aioFeed+"/data",
+            type: "GET",
+            beforeSend: function(xhr){
+               xhr.setRequestHeader('Content-Type', 'application/json');
+               xhr.setRequestHeader('X-AIO-Key', aioKey);
+            },
+         }).done(function(data) {
+            if (data[0]["id"].length > 10) {
+               if (aioCheckForPing(aioSendId, aioNonce, data)) {
+                  $('#status-text').html("Connected via AIO!").removeClass('text-warning text-danger').addClass('text-success');
+               } else {
+                  aioAttempt++;
+                  if (aioAttempt > aioMaxAttempts) {
+                     $('#status-text').html("Can't connect via AIO: timed out!").removeClass('text-warning text-success').addClass('text-danger');
+                  } else {
+                     setTimeout(aioPing, 500);
+                  }
+               }
+            } else {
+               $('#status-text').html("Can't connect via AIO: invalid response!").removeClass('text-warning text-success').addClass('text-danger');
+            }
+            
+         }).fail(function() {
+            $('#status-text').html("Can't connect via AIO: connection problem!").removeClass('text-warning text-success').addClass('text-danger');
+         });
+      }
+   }
+
+   function aioCheckForPing(firstId, nonce, data) {
+      for (var i = 0; i < data.length; i++) {
+         if (data[i]["id"] == firstId) {
+            return(false);
+         } else if (nonce == data[i]["value"].slice("ping-response$".length)) {
+            return(true);
+         }
+      }
+      return(false);
+   }
    
    $('#cookie-save').click(function() {
       var lanIp = $('#lan-ip').val();
       var aioKey = $('#AIO-key').val();
       var aioFeed = $('#AIO-feed').val();
-      if (lanIp) 
-         Cookies.set('lcnt-lan-ip', lanIp, {expires:300,path:''});
-      if (aioKey) 
-         Cookies.set('lcnt-aio-key', aioKey, {expires:300,path:''});
-      if (aioFeed) 
-         Cookies.set('lcnt-aio-feed', aioFeed, {expires:300,path:''});
+      if (lanIp) Cookies.set('lcnt-lan-ip', lanIp, {expires:300,path:''});
+      if (aioKey) Cookies.set('lcnt-aio-key', aioKey, {expires:300,path:''});
+      if (aioFeed) Cookies.set('lcnt-aio-feed', aioFeed, {expires:300,path:''});
+      if (connType) Cookies.set('lcnt-conn-type', connType, {expires:300,path:''});
    });
 
    $('#cookie-delete').click(function() {
       Cookies.remove('lcnt-lan-ip', {path:''});
       Cookies.remove('lcnt-aio-key', {path:''});
       Cookies.remove('lcnt-aio-feed', {path:''});
+      Cookies.remove('lcnt-conn-type', {path:''});
    });
 
    function send(method, path, data) {
