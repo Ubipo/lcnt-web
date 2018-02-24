@@ -22,7 +22,10 @@ html,body{ margin:0; padding:0; height:100%; width:100%; }
    width: 100%;
 }
 #cptext {
-   min-width: 7em;
+   min-width: 6em;
+}
+.card {
+   min-width: 12em;
 }
 #wrapper {
    padding-top: 1em;
@@ -32,17 +35,21 @@ html,body{ margin:0; padding:0; height:100%; width:100%; }
    background-color: #06a2c4;
 }
 .colorpicker-2x .colorpicker-saturation {
-   width: 300px;
-   height: 300px;
+   width: 250px;
+   height: 250px;
 }
 .colorpicker-2x .colorpicker-hue,
 .colorpicker-2x .colorpicker-alpha {
    width: 30px;
-   height: 300px;
+   height: 250px;
 }
 .colorpicker-2x .colorpicker-color,
 .colorpicker-2x .colorpicker-color div {
    height: 30px;
+}
+
+.pointer {
+   cursor: pointer;
 }
 
 .row > div {
@@ -116,8 +123,11 @@ html,body{ margin:0; padding:0; height:100%; width:100%; }
    border-top-right-radius: 0;
 }
 
-.cookie>p {
+.cookie p {
    margin-bottom: 0.5em;
+}
+.cookie:last-child p:last-child {
+   margin-bottom: 0;
 }
 
 /* ==== Toggle switches ==== */
@@ -177,136 +187,131 @@ input:checked + .slider:before {
 <body>
 <div id="wrapper">
    <div class="container">
-      <div class="row">
-         <div class="col-4">
-            <div class="card">
-               <div class="card-body">
-                  <h4 class="card-title"><span class="fas fa-info-circle"></span> Status</h4>
-                  <div class="form-group input-group">
-                     <input id='lan-ip' class='form-control' placeholder="LAN IP" type='text'/>
+      <div class="card-columns">
+         <div class="card">
+            <div class="card-body">
+               <h4 class="card-title"><span class="fas fa-info-circle"></span> Status</h4>
+               <div class="form-group input-group">
+                  <input id='lan-ip' class='form-control' placeholder="LAN IP" type='text'/>
+                  <div class="input-group-append">
+                     <button type="button" id="lan-submit" class="btn btn-info">Ping</button>
+                  </div>
+               </div>
+               <hr>
+               <div class="form-group AIO-input">
+                  <input id='AIO-feed' class='form-control' placeholder="AIO feed" type='text'/>
+                  <div class="input-group">
+                     <input id='AIO-key' class='form-control' placeholder="AIO key" type='password'/>
                      <div class="input-group-append">
-                        <button type="button" id="lan-submit" class="btn btn-info">Ping</button>
+                        <button type="button" id="AIO-submit" class="btn btn-info">Ping</button>
                      </div>
                   </div>
-                  <hr>
-                  <div class="form-group AIO-input">
-                     <input id='AIO-feed' class='form-control' placeholder="AIO feed" type='text'/>
-                     <div class="input-group">
-                        <input id='AIO-key' class='form-control' placeholder="AIO key" type='password'/>
-                        <div class="input-group-append">
-                           <button type="button" id="AIO-submit" class="btn btn-info">Ping</button>
-                        </div>
-                     </div>
-                  </div>
-                  <div class='cookie'>
-                     <p>Data cookie: 
-                        <a href="#" class="text-success" id="cookie-save">Save</a> 
-                        <a href="#" class="text-danger" id="cookie-delete">Delete</a></u>
-                     </p>
-                     <p>Currently selected: <b><span class="text-info" id="conn-type-text"></span></b></p>
-                     <b><p class="text-warning" id="status-text"></p></b>
-                  </div>
+               </div>
+               <div class='cookie'>
+                  <p>Data cookie: 
+                     <span class="text-success pointer" id="cookie-save">Save</span> 
+                     <span class="text-danger pointer" id="cookie-delete">Delete</span></u>
+                  </p>
+                  <p>Currently selected: <b><span class="text-info" id="conn-type-text"></span></b></p>
+                  <b><p class="text-warning" id="status-text"></p></b>
                </div>
             </div>
          </div>
 
-         <div class="col-4">
-           <div class="card">
-             <div class="card-body">
-               <h4 class="card-title"><span class="fas fa-sliders-h"></span> Led strip</h4>
-               <div id='cp' class='input-group colorpicker-component input-group-lg'>
-                  <input id='cptext' type='text' class='form-control' value='#06a2c4'/>
-                  <span class='input-group-addon cp-addon'><i></i></span>
-               </div>
-             </div>
-           </div>
-         </div>
-
-         <div class="col-4">
-            <div class="card">
-               <div class="card-body">
-                  <h4 class="card-title"><span class="fas fa-clock"></span> Fridge</h4>
-                  <div class="form-group">
-                     <label for="fridge-delay">Delay:</label>
-                     <div class="input-group">
-                        <input type="text" value="30" class="form-control" id="fridge-delay" aria-describedby="basic-addon2">
-                        <div class="input-group-append">
-                           <button type="button" id="fridge-submit" class="btn btn-info">Submit</button>
-                        </div>
-                     </div>
-                  </div>
-               </div>
-            </div>
-         </div>
-
-         <div class="col-4">
-           <div class="card">
-             <div class="card-body">
+         <div class="card">
+            <div class="card-body">
                <h4 class="card-title"><span class="fas fa-toggle-on"></span> Relays</h4>
                <div class="center-v item">
                      <div class="icon">
                         <i class="fas fa-bed fa-lg"></i>
                      </div>
-               <label class="switch">
-                 <input id="relay-night" type="checkbox" checked disabled>
-                 <span class="slider"></span>
-               </label>
-            </div>
-            <div class="center-v item">
-               <div class="icon">
-                  <i class="fas fa-lightbulb fa-lg"></i>
+                  <label class="switch">
+                     <input id="relay-night" type="checkbox" checked>
+                     <span class="slider"></span>
+                  </label>
                </div>
-               <label class="switch">
-                 <input id="relay-cupboard" type="checkbox" checked>
-                 <span class="slider"></span>
-               </label>
+               <div class="center-v item">
+                  <div class="icon">
+                     <i class="fas fa-lightbulb fa-lg"></i>
+                  </div>
+                  <label class="switch">
+                     <input id="relay-cupboard" type="checkbox" checked>
+                     <span class="slider"></span>
+                  </label>
+               </div>
+               <div class="preset-btns">
+                  <button type="button" id="preset-home" class="btn btn-info"><i class="fas fa-home fa-lg"></i></button>
+                  <button type="button" id="preset-sleep" class="btn btn-info btn-right"><i class="fas fa-moon fa-lg"></i></button>
+                  <button type="button" id="preset-away" class="btn btn-info btn-right"><i class="fas fa-sign-out-alt fa-lg"></i></button>
+               </div>
             </div>
-            <div class="preset-btns">
-               <button type="button" id="preset-home" class="btn btn-info"><i class="fas fa-home fa-lg"></i></button>
-               <button type="button" id="preset-sleep" class="btn btn-info btn-right"><i class="fas fa-moon fa-lg"></i></button>
-               <button type="button" id="preset-away" class="btn btn-info btn-right"><i class="fas fa-sign-out-alt fa-lg"></i></button>
+         </div>
+
+         <div class="card">
+            <div class="card-body">
+               <h4 class="card-title"><span class="fas fa-sliders-h"></span> Led strip</h4>
+               <div id='cp' class='input-group colorpicker-component input-group-lg'>
+                  <input id='cptext' type='text' class='form-control' value='#06a2c4'/>
+                  <span class='input-group-addon cp-addon'><i></i></span>
+               </div>
             </div>
-             </div>
-           </div>
+         </div>
+
+         <div class="card">
+            <div class="card-body">
+               <h4 class="card-title"><span class="fas fa-clock"></span> Fridge</h4>
+               <div class="form-group">
+                  <label for="fridge-delay">Delay:</label>
+                  <div class="input-group">
+                     <input type="text" value="30" class="form-control" id="fridge-delay" aria-describedby="basic-addon2">
+                     <div class="input-group-append">
+                        <button type="button" id="fridge-submit" class="btn btn-info">Submit</button>
+                     </div>
+                  </div>
+               </div>
+            </div>
          </div>
       </div>
   </div>
 </div>
 
 <script>
-   var lanIp = Cookies.get('lcnt-lan-ip');
-   var aioKey = Cookies.get('lcnt-aio-key');
-   var aioFeed = Cookies.get('lcnt-aio-feed');
-   var connType = Cookies.get('lcnt-conn-type');
-
-   if (lanIp) $('#lan-ip').val(lanIp);
-   if (aioKey) $('#AIO-key').val(aioKey);
-   if (aioFeed) $('#AIO-feed').val(aioFeed);
-   $('#conn-type-text').html(connType);
-
    var aioLastId;
    var aioNonce;
    var aioAttempt;
    var aioMaxAttempts = 5;
    var color;
 
+   var lanIp = Cookies.get('lcnt-lan-ip');
+   var aioKey = Cookies.get('lcnt-aio-key');
+   var aioFeed = Cookies.get('lcnt-aio-feed');
+   var connType = Cookies.get('lcnt-conn-type');
+   if (!connType) {connType = "LAN";}
+
+   if (lanIp) $('#lan-ip').val(lanIp);
+   if (aioKey) $('#AIO-key').val(aioKey);
+   if (aioFeed) $('#AIO-feed').val(aioFeed);
+   $('#conn-type-text').html(connType);
+
+
    $('#cp').colorpicker({
       format: 'hex',
       customClass: 'colorpicker-2x',
       hoizontal: true,
       sliders: {
-         saturation:{maxLeft: 300, maxTop: 300},
-         hue:{maxTop: 300},
-         alpha:{maxTop: 300}
+         saturation:{maxLeft: 250, maxTop: 250},
+         hue:{maxTop: 250},
+         alpha:{maxTop: 250}
       }
    }).on('changeColor', function(e) {
       color = e.color.toString('hex');
       $('#wrapper').css('background-color', color);
+      if (connType == "LAN") {
+         send('POST', '/strip/solid', color);
+      }
    }).on('hidePicker', function(e) {
       send('POST', '/strip/solid', color);
    });
-
-   // $('#cp').on('focusout', function(e){// $.post('set', color)//})
 
    $('#lan-submit').click(function() {
       connType = "LAN";
@@ -402,7 +407,31 @@ input:checked + .slider:before {
       }
       return(false);
    }
-   
+
+   $('#relay-night').click(function() {
+      send('POST', '/relay', {state: 'toggle', id: 'nightlight'});
+   });
+
+   $('#relay-cupboard').click(function() {
+      send('POST', '/relay', {state: 'toggle', id: 'cupboard'});
+   });
+
+   $('#preset-home').click(function() {
+      send('POST', '/preset', 'home');
+   });
+
+   $('#preset-sleep').click(function() {
+      send('POST', '/preset', 'sleep');
+   });
+
+   $('#preset-away').click(function() {
+      send('POST', '/preset', 'away');
+   });
+
+   $('#fridge-submit').click(function() {
+      send('POST', '/fridge', $('#fridge-delay').val());
+   });
+
    $('#cookie-save').click(function() {
       var lanIp = $('#lan-ip').val();
       var aioKey = $('#AIO-key').val();
@@ -421,7 +450,13 @@ input:checked + .slider:before {
    });
 
    function send(method, path, data) {
-      console.log(method + path + data);
+      if (typeof data == "object")
+         data = JSON.stringify(data);
+      if (connType == "AIO") {
+         console.log("AIO| " + method+'$'+path+'$'+data);
+      } else {
+         console.log("LAN|" + method + "|" + path + "|" + data);
+      }
    }
 
 
