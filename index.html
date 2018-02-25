@@ -16,7 +16,7 @@
 
 <style>
 
-html,body{ margin:0; padding:0; height:100%; width:100%; }
+html,body{ margin:0; padding:0; height:100%; width:100%;}
 
 #cp {
    width: 100%;
@@ -29,9 +29,8 @@ html,body{ margin:0; padding:0; height:100%; width:100%; }
 }
 #wrapper {
    padding-top: 1em;
-   height: 100%;
+   height: 100vh;
    width: 100%;
-   background-color: #06a2c4;
 }
 .colorpicker-2x .colorpicker-saturation {
    width: 250px;
@@ -45,6 +44,17 @@ html,body{ margin:0; padding:0; height:100%; width:100%; }
 .colorpicker-2x .colorpicker-color,
 .colorpicker-2x .colorpicker-color div {
    height: 30px;
+}
+
+#cp-preset-container {
+   margin-top: 1em;
+   display: flex;
+   border: 1px solid lightgrey;
+}
+
+.cp-preset {
+   flex-grow: 1;
+   height: 1.3em;
 }
 
 .pointer {
@@ -250,8 +260,10 @@ input:checked + .slider:before {
             <div class="card-body">
                <h4 class="card-title"><span class="fas fa-sliders-h"></span> Led strip</h4>
                <div id='cp' class='input-group colorpicker-component input-group-lg'>
-                  <input id='cptext' type='text' class='form-control' value='#06a2c4'/>
+                  <input id='cptext' type='text' class='form-control'/>
                   <span class='input-group-addon cp-addon'><i></i></span>
+               </div>
+               <div id="cp-preset-container" class="pointer">
                </div>
             </div>
          </div>
@@ -280,6 +292,7 @@ input:checked + .slider:before {
    var aioAttempt;
    var aioMaxAttempts = 5;
    var color;
+   var cpPresets = ['#FFFFFF', '#0092ff', '#00ff34', '#ff4200', '#000000']
 
    var lanIp = Cookies.get('lcnt-lan-ip');
    var aioKey = Cookies.get('lcnt-aio-key');
@@ -292,6 +305,18 @@ input:checked + .slider:before {
    if (aioFeed) $('#AIO-feed').val(aioFeed);
    $('#conn-type-text').html(connType);
 
+   for (var i = 0; i < cpPresets.length; i++) {
+      $('#cp-preset-container').append(
+         '<div class="cp-preset" cp-preset-id="'+i+'" style="background-color:'+cpPresets[i]+'"></div>'
+      );
+   }
+
+   $('.cp-preset').click(function() {
+      color = cpPresets[$(this).attr('cp-preset-id')];
+      $('#wrapper').css('background-color', color);
+      send('POST', '/strip/solid', color);
+      $('#cp').colorpicker('setValue', color);
+   })
 
    $('#cp').colorpicker({
       format: 'hex',
@@ -301,9 +326,10 @@ input:checked + .slider:before {
          saturation:{maxLeft: 250, maxTop: 250},
          hue:{maxTop: 250},
          alpha:{maxTop: 250}
-      }
+      },
+      color: '#074f57'
    }).on('changeColor', function(e) {
-      color = e.color.toString('hex');
+      color = $(this).colorpicker('getValue');
       $('#wrapper').css('background-color', color);
       if (connType == "LAN") {
          send('POST', '/strip/solid', color);
@@ -311,6 +337,9 @@ input:checked + .slider:before {
    }).on('hidePicker', function(e) {
       send('POST', '/strip/solid', color);
    });
+
+   color = $('#cp').colorpicker('getValue');
+   $('#wrapper').css('background-color', color);
 
    $('#lan-submit').click(function() {
       connType = "LAN";
@@ -452,9 +481,9 @@ input:checked + .slider:before {
       if (typeof data == "object")
          data = JSON.stringify(data);
       if (connType == "AIO") {
-         alert("AIO| " + method+'$'+path+'$'+data);
+         console.log("AIO| " + method+'$'+path+'$'+data);
       } else {
-         alert("LAN|" + method + "|" + path + "|" + data);
+         console.log("LAN|" + method + "|" + path + "|" + data);
       }
    }
 
