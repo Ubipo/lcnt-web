@@ -16,7 +16,7 @@
 
 <style>
 
-html,body{ margin:0; padding:0; height:100%; width:100%;}
+html,body{ margin:0; padding:0; height:100vh; width:100vw;}
 
 #cp {
    width: 100%;
@@ -28,10 +28,18 @@ html,body{ margin:0; padding:0; height:100%; width:100%;}
    min-width: 12em;
 }
 #wrapper {
-   padding-top: 1em;
+   padding-top: 3em;
    height: 100vh;
-   width: 100%;
+   width: 100vw;
+   overflow-y: scroll;
 }
+
+@media only screen and (max-width: 500px) {
+   #wrapper {
+      padding-top: 1em;
+   }
+}
+
 .colorpicker-2x .colorpicker-saturation {
    width: 250px;
    height: 250px;
@@ -380,7 +388,7 @@ input:checked + .slider:before {
          },
       }).done(function(data) {
          aioSendId = data["id"];
-         if (aioSendId.length > 10) {
+         if (xhr.status!=200) {
             $('#status-text').html("Connecting via AIO: ping send").removeClass('text-success text-danger').addClass('text-warning');
             aioAttempt = 0;
             aioPing();
@@ -404,7 +412,7 @@ input:checked + .slider:before {
                xhr.setRequestHeader('X-AIO-Key', aioKey);
             },
          }).done(function(data) {
-            if (data[0]["id"].length > 10) {
+            if (xhr.status!=200) {
                if (aioCheckForPing(aioSendId, aioNonce, data)) {
                   $('#status-text').html("Connected via AIO!").removeClass('text-warning text-danger').addClass('text-success');
                } else {
@@ -478,12 +486,45 @@ input:checked + .slider:before {
    });
 
    function send(method, path, data) {
+      var lanIp = $('#lan-ip').val();
+      var aioKey = $('#AIO-key').val();
+      var aioFeed = $('#AIO-feed').val();
+
       if (typeof data == "object")
          data = JSON.stringify(data);
+
       if (connType == "AIO") {
          console.log("AIO| " + method+'$'+path+'$'+data);
+         $.ajax({
+            type: method,
+            url: 'https://io.adafruit.com/api/v2/'+aioFeed+'/data',
+            data: method+'$'+path+'$'+data
+         }).done(function(data, textStatus, xhr) {
+            if (xhr.status!=200) {
+               console.log(data);
+               $('#status-text').html("Last request failed: AIO error!").removeClass('text-warning text-success').addClass('text-danger');
+            } else {
+               $('#status-text').html('');
+            }
+         }).fail(function() {
+            $('#status-text').html("Last request failed: connection problem!").removeClass('text-warning text-success').addClass('text-danger');
+         });
       } else {
          console.log("LAN|" + method + "|" + path + "|" + data);
+         $.ajax({
+            type: method,
+            url: 'http://' + lanIp + path,
+            data: data
+         }).done(function(data) {
+            if (xhr.status!=200) {
+               console.log(data);
+               $('#status-text').html("Last request failed: LAN error!").removeClass('text-warning text-success').addClass('text-danger');
+            } else {
+               $('#status-text').html('');
+            }
+         }).fail(function() {
+            $('#status-text').html("Last request failed: connection problem!").removeClass('text-warning text-success').addClass('text-danger');
+         });
       }
    }
 
